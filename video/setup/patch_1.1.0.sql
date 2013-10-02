@@ -15,4 +15,4 @@ INSERT INTO `cot_structure` (`structure_area`, `structure_code`, `structure_path
 ('video', 'system', '999', '', 'System', '', '', 0, 0);
 
 UPDATE `cot_structure` SET `structure_count` = (SELECT COUNT(*) FROM `cot_videos` WHERE `vid_cat`='system')
-	WHERE `structure_code`='system';
+	WHERE `structure_area`='video' AND `structure_code`='system';
