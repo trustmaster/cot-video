@@ -2,12 +2,22 @@
 {FILE "{PHP.cfg.themes_dir}/admin/{PHP.cfg.admintheme}/warnings.tpl"}
 
 <div class="block">
+	<!-- IF {PHP.video_has_categories} -->
+	<form name="filter" method="get" action="{VIDEO_ADMIN_FILTER_ACTION}">
+		<input type="hidden" name="m" value="video">
+		<div>
+			<strong>{PHP.L.Show}:</strong> &nbsp; {VIDEO_ADMIN_FILTER_CAT} &nbsp; <button type="submit" class="button">{PHP.L.Filter}</button>
+		</div>
+	</form>
+	<!-- ENDIF -->
 	<h3>{PHP.L.vid_all}</h3>
 	<table class="cells">
 		<tr>
-			<!-- <td class="coltop">
+			<!-- IF {PHP.video_has_categories} -->
+			<td class="coltop">
 				{PHP.L.Category}
-			</td> -->
+			</td>
+			<!-- ENDIF -->
 			<td class="coltop">
 				{PHP.L.vid_priority}
 			</td>
@@ -30,7 +40,9 @@
 		<!-- BEGIN: VIDEO_ADMIN_ROW -->
 		<tr>
 			<form action="{VIDEO_ADMIN_ROW_UPDATE_URL}" method="post">
-			<!-- <td>{VIDEO_ADMIN_ROW_CATEGORY}</td> -->
+			<!-- IF {PHP.video_has_categories} -->
+			<td>{VIDEO_ADMIN_ROW_CAT}</td>
+			<!-- ENDIF -->
 			<td>
 				{VIDEO_ADMIN_ROW_ORDER}
 			</td>
@@ -63,9 +75,11 @@
 	<form action="{VIDEO_ADMIN_ADD_URL}" method="post">
 	<table class="cells">
 		<tr>
-			<!-- <td class="coltop">
+		<!-- IF {PHP.video_has_categories} -->
+			<td class="coltop">
 				{PHP.L.Category}
-			</td> -->
+			</td>
+		<!-- ENDIF -->
 			<td class="coltop">
 				{PHP.L.Title}
 			</td>
@@ -78,7 +92,9 @@
 			<td class="coltop"></td>
 		</tr>
 		<tr>
-			<!-- <td>{VIDEO_ADMIN_ADD_CATEGORY}</td> -->
+			<!-- IF {PHP.video_has_categories} -->
+			<td>{VIDEO_ADMIN_ADD_CAT}</td>
+			<!-- ENDIF -->
 			<td>
 				{VIDEO_ADMIN_ADD_TITLE}
 			</td>

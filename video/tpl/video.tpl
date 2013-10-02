@@ -2,7 +2,11 @@
 
 <div class="col first">
 	<div class="block">
-		<h2>{PHP.L.vid_all}</h2>
+		<h2>{VIDEO_PATH}</h2>
+		<!-- BEGIN: VIDEO_CATS -->
+			<h3><a href="{VIDEO_CATS_URL}">{VIDEO_CATS_TITLE}</a> ({VIDEO_CATS_COUNT})</h3>
+			<p class="small">{VIDEO_CATS_DESC}</p>
+		<!-- END: VIDEO_CATS -->
 
 		<!-- BEGIN: VIDEO_ROW -->
 		<div class="item">
