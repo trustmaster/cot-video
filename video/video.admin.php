@@ -8,6 +8,8 @@ Hooks=admin
 list($usr['auth_read'], $usr['auth_write'], $usr['isadmin']) = cot_auth('video', 'a');
 cot_block($usr['isadmin']);
 
+$c = cot_import('c', 'G', 'TXT');
+
 require_once cot_incfile('video', 'module');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
@@ -62,8 +64,9 @@ cot_display_messages($t);
 list($pg, $d, $durl) = cot_import_pagenav('d', $cfg['maxrowsperpage']);
 
 // Display the main page
+$video_where_sql = !empty($c) ? "WHERE vid_cat=".$db->quote($c) : '';
 
-$res = $db->query("SELECT * FROM $db_videos ORDER BY vid_order, vid_id DESC");
+$res = $db->query("SELECT * FROM $db_videos $video_where_sql ORDER BY vid_order, vid_id DESC LIMIT $d, ".(int)$cfg['maxrowsperpage']);
 
 foreach ($res->fetchAll() as $row)
 {
@@ -82,15 +85,25 @@ $t->assign(array(
 
 $t->assign(video_tplform(array(), 'VIDEO_ADMIN_ADD_'));
 
-$totalitems = $db->query("SELECT COUNT(*) FROM $db_videos")->fetchColumn();
+$totalitems = $db->query("SELECT COUNT(*) FROM $db_videos $video_where_sql")->fetchColumn();
 
-$pagenav = cot_pagenav('admin', 'm=video', $d, $totalitems, $cfg['maxrowsperpage'], 'd');
+$pagenav = cot_pagenav('admin', 'm=video&c='.$c, $d, $totalitems, $cfg['maxrowsperpage'], 'd');
+
+$video_empty_structure = array(
+	'tpath' => '---',
+);
+$usr['auth']['video'][''] = 255;
+$structure['video'] = array_merge(array('' => $video_empty_structure), $structure['video']);
 
 $t->assign(array(
-	'VIDEO_ADMIN_PAGENAV'     => $pagenav['main'],
-	'VIDEO_ADMIN_PAGEPREV'    => $pagenav['prev'],
-	'VIDEO_ADMIN_PAGENEXT'    => $pagenav['next'],
+	'VIDEO_ADMIN_FILTER_ACTION' => cot_url('admin'),
+	'VIDEO_ADMIN_FILTER_CAT'	=> cot_selectbox_structure('video', $c, 'c'),
+	'VIDEO_ADMIN_PAGENAV'		=> $pagenav['main'],
+	'VIDEO_ADMIN_PAGEPREV'		=> $pagenav['prev'],
+	'VIDEO_ADMIN_PAGENEXT'		=> $pagenav['next'],
 ));
+
+unset($structure['video'][''], $usr['auth']['video']['']);
 
 $t->parse();
 $adminmain = $t->text('MAIN');

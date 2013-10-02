@@ -12,7 +12,7 @@ global $db_videos, $cot_extrafields, $structure;
 $cot_extrafields[$db_videos] = (!empty($cot_extrafields[$db_videos]))	? $cot_extrafields[$db_videos] : array();
 
 $structure['video'] = (is_array($structure['video'])) ? $structure['video'] : array();
-
+$video_has_categories = count($structure['video']) > 0 ? true : false;
 
 /**
  * Adds a new video entry to the database
@@ -141,7 +141,7 @@ function video_tplform($row, $prefix, $input_prefix = 'rvid')
 
 	$tpltags = array(
 		$prefix . 'CAT' => cot_selectbox_structure('video', $row['vid_cat'], $input_prefix . 'cat'),
-		$prefix . 'TITLE' => cot_inputbox('text', $input_prefix . 'title', $row['vid_title'], array('size' => '64', 'maxlength' => '255')),
+		$prefix . 'TITLE' => cot_inputbox('text', $input_prefix . 'title', $row['vid_title'], array('size' => '32', 'maxlength' => '255')),
 		$prefix . 'SOURCE' => cot_selectbox($row['vid_source'], $input_prefix . 'source', array('youtube', 'vimeo'), array('Youtube', 'Vimeo'), false),
 		$prefix . 'CODE' => cot_inputbox('text', $input_prefix . 'code', $row['vid_code'], array('size' => '32', 'maxlength' => '64')),
 		$prefix . 'ORDER' => cot_selectbox($row['vid_order'], $input_prefix . 'order', range(1,100), range(1, 100), false)
@@ -277,4 +277,69 @@ function video_validate($data, $input_prefix = 'rvid')
 	cot_check(mb_strlen($data['vid_title']) < 2, 'vid_err_titletooshort', $input_prefix . 'title');
 	cot_check(empty($data['vid_code']), 'vid_err_emptycode', $input_prefix . 'code');
 	return !cot_error_found();
+}
+
+/**
+* Generate tpl tags for a category
+* @param string $cat Category code
+* @param string $prefix TPL tag prefix
+* @return array Array of tags for assignment
+*/
+function video_cat_tpltags($cat, $prefix = 'VIDEO_CATS_')
+{
+	global $structure;
+	return array(
+		$prefix.'CODE' => htmlspecialchars($cat),
+		$prefix.'TITLE' => htmlspecialchars($structure['video'][$cat]['title']),
+		$prefix.'DESC' => htmlspecialchars($structure['video'][$cat]['desc']),
+		$prefix.'ICON' => htmlspecialchars($structure['video'][$cat]['icon']),
+		$prefix.'LOCKED' => (bool)$structure['video'][$cat]['locked'],
+		$prefix.'COUNT' => (int)$structure['video'][$cat]['count'],
+		$prefix.'ID' => (int)$structure['video'][$cat]['id'],
+		$prefix.'PATH' => cot_breadcrumbs(cot_structure_buildpath('video', $cat), false),
+		$prefix.'URL' => cot_url('video', 'c='.$cat)
+	);
+}
+
+/**
+* Get children category codes for inputed category
+* @param string $cat The category to get the children for. 'system' will return the top level categories
+* @return mixed Children category codes or false if none
+*/
+function video_category_children($cat = 'system')
+{
+	global $structure;
+
+	$cats = array();
+	if($cat == 'system')
+	{
+		// Grab top level categories
+		foreach($structure['video'] as $code => $data)
+		{
+			if(mb_strpos($data['rpath'], '.') === false && $code != 'system')
+			{
+				$auth = video_auth($code);
+				if($auth['auth_read'])
+				{
+					$cats[] = $code;
+				}
+			}
+		}
+	}
+	else
+	{
+		$cats = cot_structure_children('video', $cat, false, false);
+	}
+	return count($cats) > 0 ? $cats : false;
+}
+
+/**
+* Recounts videos in a category
+* @param string $cat Category code
+* @return int Count
+*/
+function cot_video_sync($cat)
+{
+	global $db, $db_videos;
+	return (int)$db->query("SELECT COUNT(*) FROM $db_videos WHERE vid_cat=?", $cat)->fetchColumn();
 }
