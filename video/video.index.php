@@ -14,7 +14,7 @@ $tt = new XTemplate(cot_tplfile('video.index', 'module'));
 $vid_res = $db->query("SELECT v.*, u.*
 	FROM $db_videos AS v
 		LEFT JOIN $db_users AS u ON v.vid_user = u.user_id
-	ORDER BY vid_order, vid_id DESC
+	ORDER BY v.vid_order, v.vid_id DESC
 	LIMIT {$cfg['video']['perindex']}");
 
 foreach ($vid_res->fetchAll() as $vid)

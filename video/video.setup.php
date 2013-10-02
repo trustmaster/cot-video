@@ -4,8 +4,8 @@
 Code=video
 Name=Video
 Description=Video Catalog, displaying videos from public video hostings
-Version=1.0.0
-Date=2013-05-18
+Version=1.1.0
+Date=2013-10-01
 Author=Vladimir Sirirov
 Copyright=(c) Vladimir Sirirov, 2013
 Notes=
