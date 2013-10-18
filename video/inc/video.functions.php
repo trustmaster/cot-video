@@ -21,7 +21,7 @@ $video_has_categories = count($structure['video']) > 0 ? true : false;
  */
 function video_add($data)
 {
-	global $db, $db_structure, $db_videos;
+	global $db, $db_structure, $db_videos, $cache;
 
 	if (cot_error_found())
 	{
@@ -40,8 +40,8 @@ function video_add($data)
 	if (!empty($data['vid_cat']))
 	{
 		$db->query("UPDATE $db_structure SET structure_count=structure_count+1 WHERE structure_code = ? AND structure_area = 'video'", $data['vid_cat']);
+		$cache && $cache->db->remove('structure', 'system');
 	}
-
 	return $id;
 }
 
@@ -68,7 +68,7 @@ function video_auth($cat = null)
  */
 function video_delete($id)
 {
-	global $db, $db_structure, $db_videos;
+	global $db, $db_structure, $db_videos, $cache;
 
 	if (!is_numeric($id) || $id <= 0)
 	{
@@ -81,8 +81,8 @@ function video_delete($id)
 	if (!empty($row_vid['vid_cat']))
 	{
 		$db->query("UPDATE $db_structure SET structure_count=structure_count-1 WHERE structure_code = ? AND structure_area = 'video'", $row_vid['vid_cat']);
+		$cache && $cache->db->remove('structure', 'system');
 	}
-
 	return $db->delete($db_videos, "vid_id = ?", $id) > 0;
 }
 
@@ -288,13 +288,24 @@ function video_validate($data, $input_prefix = 'rvid')
 function video_cat_tpltags($cat, $prefix = 'VIDEO_CATS_')
 {
 	global $structure;
+
+	$count = (int)$structure['video'][$cat]['count'];
+	if($cat != 'system')
+	{
+		$cat_children = cot_structure_children('video', $cat, true, false);
+		foreach($cat_children as $cat_child)
+		{
+			$count += (int)$structure['video'][$cat_child]['count'];
+		}
+	}
+
 	return array(
 		$prefix.'CODE' => htmlspecialchars($cat),
 		$prefix.'TITLE' => htmlspecialchars($structure['video'][$cat]['title']),
 		$prefix.'DESC' => htmlspecialchars($structure['video'][$cat]['desc']),
 		$prefix.'ICON' => htmlspecialchars($structure['video'][$cat]['icon']),
 		$prefix.'LOCKED' => (bool)$structure['video'][$cat]['locked'],
-		$prefix.'COUNT' => (int)$structure['video'][$cat]['count'],
+		$prefix.'COUNT' => $count,
 		$prefix.'ID' => (int)$structure['video'][$cat]['id'],
 		$prefix.'PATH' => cot_breadcrumbs(cot_structure_buildpath('video', $cat), false),
 		$prefix.'URL' => cot_url('video', 'c='.$cat)
